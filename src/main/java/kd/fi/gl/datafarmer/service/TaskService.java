@@ -1,6 +1,6 @@
 package kd.fi.gl.datafarmer.service;
 
-import kd.fi.gl.datafarmer.model.Task;
+import kd.fi.gl.datafarmer.model.TaskConfig;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,21 +14,21 @@ import java.util.List;
 
 @Service
 public class TaskService {
-    public List<Task> getAllTasks() {
+    public List<TaskConfig> getAllTasks() {
         return null;
     }
 
-    public Task getTaskById(Long taskId) {
-        return null;
-
-    }
-
-    public Task createTask(Task task) {
+    public TaskConfig getTaskById(Long taskId) {
         return null;
 
     }
 
-    public Task updateTask(Long taskId, Task updatedTask) {
+    public TaskConfig createTask(TaskConfig taskConfig) {
+        return null;
+
+    }
+
+    public TaskConfig updateTask(Long taskId, TaskConfig updatedTaskConfig) {
         return null;
 
     }

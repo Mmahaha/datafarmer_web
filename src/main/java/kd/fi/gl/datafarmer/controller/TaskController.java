@@ -1,8 +1,9 @@
 package kd.fi.gl.datafarmer.controller;
 
-import kd.fi.gl.datafarmer.model.Task;
+import kd.fi.gl.datafarmer.model.TaskConfig;
 import kd.fi.gl.datafarmer.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +23,8 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
+@CrossOrigin(originPatterns = "*")
 public class TaskController {
 
     @Autowired
@@ -30,26 +32,26 @@ public class TaskController {
 
     // 查询所有任务
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<TaskConfig> getAllTasks() {
         return taskService.getAllTasks();
     }
 
     // 查询单个任务
     @GetMapping("/{taskId}")
-    public Task getTaskById(@PathVariable Long taskId) {
+    public TaskConfig getTaskById(@PathVariable Long taskId) {
         return taskService.getTaskById(taskId);
     }
 
     // 创建任务
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    public TaskConfig createTask(@RequestBody TaskConfig taskConfig) {
+        return taskService.createTask(taskConfig);
     }
 
     // 更新任务
     @PutMapping("/{taskId}")
-    public Task updateTask(@PathVariable Long taskId, @RequestBody Task updatedTask) {
-        return taskService.updateTask(taskId, updatedTask);
+    public TaskConfig updateTask(@PathVariable Long taskId, @RequestBody TaskConfig updatedTaskConfig) {
+        return taskService.updateTask(taskId, updatedTaskConfig);
     }
 
     // 删除任务
