@@ -6,8 +6,8 @@ public enum ResultCode {
     FAILED(500, "操作失败");
 
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
     ResultCode(int code, String message) {
         this.code = code;

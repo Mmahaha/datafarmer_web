@@ -1,26 +1,24 @@
-package kd.fi.gl.datafarmer.model;
+package kd.fi.gl.datafarmer.dto;
 
+import kd.fi.gl.datafarmer.core.task.TaskParam;
 import kd.fi.gl.datafarmer.core.task.enums.TaskStatus;
 import kd.fi.gl.datafarmer.core.task.enums.TaskType;
+import kd.fi.gl.datafarmer.model.TaskConfig;
 
 /**
- * Description:任务的数据库实体类
+ * Description: 前后端交互对象，主要是处理了数据库中taskParam字段的反序列化
+ * {@link TaskConfig}
  *
  * @author ysj
- * @date 2024/1/14
+ * @date 2024/1/19
  */
+public class TaskConfigDTO<T extends TaskParam> {
 
-public class TaskConfig {
-
-    private long id;
-    /**
-     * 任务类型
-     */
     private TaskType taskType;
     /**
      * 任务参数
      */
-    private String taskParam;
+    private T taskParam;
     /**
      * 任务状态
      */
@@ -30,14 +28,6 @@ public class TaskConfig {
      */
     private String message;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public TaskType getTaskType() {
         return taskType;
     }
@@ -46,11 +36,11 @@ public class TaskConfig {
         this.taskType = taskType;
     }
 
-    public String getTaskParam() {
+    public T getTaskParam() {
         return taskParam;
     }
 
-    public void setTaskParam(String taskParam) {
+    public void setTaskParam(T taskParam) {
         this.taskParam = taskParam;
     }
 
@@ -71,4 +61,3 @@ public class TaskConfig {
     }
 
 }
-

@@ -43,6 +43,7 @@ public class JdbcTemplateContainer {
     }
 
     public Connection getSysConnection() throws SQLException {
+        checkInit();
         return sysDataSource.getConnection();
     }
 
