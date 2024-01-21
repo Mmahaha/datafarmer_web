@@ -1,22 +1,12 @@
 package kd.fi.gl.datafarmer.mapper;
 
-import com.alibaba.druid.util.StringUtils;
 import kd.fi.gl.datafarmer.common.db.JdbcTemplateContainer;
 import kd.fi.gl.datafarmer.common.util.JsonUtils;
-import kd.fi.gl.datafarmer.core.task.TaskParam;
-import kd.fi.gl.datafarmer.core.util.BookService;
-import kd.fi.gl.datafarmer.core.util.PeriodVOBuilder;
+import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
-import kd.fi.gl.datafarmer.dto.TaskConfigGroupDTO;
 import kd.fi.gl.datafarmer.model.TaskConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Description: dto mapper
@@ -30,9 +20,9 @@ public class TaskConfigMapper {
     @Autowired
     private JdbcTemplateContainer container;
 
-    public TaskConfigDTO<TaskParam> toDTO(TaskConfig taskConfig) {
-        Class<? extends TaskParam> paramClass = taskConfig.getTaskType().getParamClass();
-        TaskConfigDTO<TaskParam> taskConfigDTO = new TaskConfigDTO<>();
+    public TaskConfigDTO<? extends TaskExecutable> toDTO(TaskConfig taskConfig) {
+        Class<? extends TaskExecutable> paramClass = taskConfig.getTaskType().getParamClass();
+        TaskConfigDTO<TaskExecutable> taskConfigDTO = new TaskConfigDTO<>();
         taskConfigDTO.setTaskType(taskConfig.getTaskType());
         taskConfigDTO.setTaskStatus(taskConfig.getTaskStatus());
         taskConfigDTO.setMessage(taskConfig.getMessage());
@@ -40,7 +30,7 @@ public class TaskConfigMapper {
         return taskConfigDTO;
     }
 
-    public TaskConfig toEntity(TaskConfigDTO<TaskParam> taskConfigDTO) {
+    public TaskConfig toEntity(TaskConfigDTO<? extends TaskExecutable> taskConfigDTO) {
         TaskConfig taskConfig = new TaskConfig();
         taskConfig.setTaskType(taskConfigDTO.getTaskType());
         taskConfig.setTaskStatus(taskConfigDTO.getTaskStatus());

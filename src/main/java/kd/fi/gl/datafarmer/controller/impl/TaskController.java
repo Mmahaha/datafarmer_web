@@ -1,8 +1,8 @@
 package kd.fi.gl.datafarmer.controller.impl;
 
 import kd.fi.gl.datafarmer.common.ApiResponse;
-import kd.fi.gl.datafarmer.controller.GenericTaskController;
-import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskParam;
+import kd.fi.gl.datafarmer.core.task.TaskExecutable;
+import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,45 +26,41 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/api/tasks/irrigate")
+@RequestMapping("/api/tasks")
 @CrossOrigin(originPatterns = "*")
-public class IrrigateTaskController implements GenericTaskController<IrrigateTaskParam> {
+public class TaskController {
 
     @Autowired
     private TaskService taskService;
 
-    // 查询所有任务
-    @GetMapping
+    // 查询所有灌数任务
+    @GetMapping("/irrigate")
     @Autowired
-    public ApiResponse<List<TaskConfigDTO<IrrigateTaskParam>>> getAllTasks() {
-        return ApiResponse.success(taskService.getAllTasks());
+    public ApiResponse<List<TaskConfigDTO<IrrigateTaskExecutable>>> getAllIrrigateTasks() {
+        return ApiResponse.success(taskService.getAllIrrigateTasks());
     }
 
-    @Override
     @GetMapping("/{taskId}")
-    public ApiResponse<TaskConfigDTO<IrrigateTaskParam>> getTaskById(@PathVariable Long taskId) {
+    public ApiResponse<TaskConfigDTO<? extends TaskExecutable>> getTaskById(@PathVariable Long taskId) {
         return ApiResponse.success(taskService.getTaskById(taskId));
     }
 
 
     // 创建任务
-    @Override
     @PostMapping
-    public ApiResponse<Boolean> createTask(@RequestBody TaskConfigDTO<IrrigateTaskParam> taskConfigDTO) {
+    public ApiResponse<Boolean> createTask(@RequestBody TaskConfigDTO<TaskExecutable> taskConfigDTO) {
         taskService.createTask(taskConfigDTO);
         return ApiResponse.success(Boolean.TRUE);
     }
 
     // 更新任务
-    @Override
     @PutMapping("/{taskId}")
-    public ApiResponse<Boolean> updateTask(@PathVariable Long taskId, @RequestBody TaskConfigDTO<IrrigateTaskParam> updatedTaskConfig) {
+    public ApiResponse<Boolean> updateTask(@PathVariable Long taskId, @RequestBody TaskConfigDTO<TaskExecutable> updatedTaskConfig) {
         taskService.updateTask(taskId, updatedTaskConfig);
         return ApiResponse.success(Boolean.TRUE);
     }
 
     // 删除任务
-    @Override
     @DeleteMapping("/{taskId}")
     public ApiResponse<Boolean> deleteTask(@PathVariable Long taskId) {
         taskService.deleteTask(taskId);

@@ -1,8 +1,10 @@
 package kd.fi.gl.datafarmer.service;
 
-import kd.fi.gl.datafarmer.core.task.TaskParam;
+import kd.fi.gl.datafarmer.core.executor.TaskExecutor;
+import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.core.task.enums.TaskStatus;
 import kd.fi.gl.datafarmer.core.task.enums.TaskType;
+import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.dao.TaskDao;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.mapper.TaskConfigMapper;
@@ -21,41 +23,57 @@ import java.util.stream.Collectors;
  */
 
 @Service
+@SuppressWarnings("unchecked")
 public class TaskService {
 
     @Autowired
     private TaskDao taskDao;
 
     @Autowired
+    private TaskExecutor taskExecutor;
+
+    @Autowired
     private TaskConfigMapper taskConfigMapper;
 
-    public List<TaskConfigDTO<TaskParam>> getAllTasks() {
+    public List<TaskConfigDTO<? extends TaskExecutable>> getAllTasks() {
         List<TaskConfig> taskConfigs = taskDao.findAll();
         return taskConfigs.stream().map(taskConfigMapper::toDTO).collect(Collectors.toList());
     }
 
-    public List<TaskConfigDTO<TaskParam>> getTasksByTaskTypeAndStatus(TaskType taskType, TaskStatus taskStatus) {
+    public List<TaskConfigDTO<IrrigateTaskExecutable>> getAllIrrigateTasks() {
+        List<TaskConfig> taskConfigs = taskDao.findByTaskType(TaskType.IRRIGATE);
+        return taskConfigs.stream()
+                .map(taskConfig -> (TaskConfigDTO<IrrigateTaskExecutable>) taskConfigMapper.toDTO(taskConfig))
+                .collect(Collectors.toList());
+    }
+
+    public List<TaskConfigDTO<? extends TaskExecutable>> getTasksByTaskTypeAndStatus(TaskType taskType, TaskStatus taskStatus) {
         List<TaskConfig> taskConfigs = taskDao.findByTaskTypeAndStatus(taskType, taskStatus);
         return taskConfigs.stream().map(taskConfigMapper::toDTO).collect(Collectors.toList());
     }
 
 
-    public TaskConfigDTO<TaskParam> getTaskById(Long taskId) {
+    public TaskConfigDTO<? extends TaskExecutable> getTaskById(Long taskId) {
         TaskConfig taskConfig = taskDao.findById(taskId);
         return taskConfigMapper.toDTO(taskConfig);
     }
 
-    public void createTask(TaskConfigDTO<TaskParam> taskConfigDTO) {
+    public void createTask(TaskConfigDTO<? extends TaskExecutable> taskConfigDTO) {
         TaskConfig taskConfig = taskConfigMapper.toEntity(taskConfigDTO);
         taskDao.createTask(taskConfig);
     }
 
-    public void updateTask(Long taskId, TaskConfigDTO<TaskParam> updatedTaskConfigDTO) {
+    public void updateTask(Long taskId, TaskConfigDTO<? extends TaskExecutable> updatedTaskConfigDTO) {
         TaskConfig taskConfig = taskConfigMapper.toEntity(updatedTaskConfigDTO);
         taskDao.updateTask(taskId, taskConfig);
     }
 
     public void deleteTask(Long taskId) {
         taskDao.deleteTask(taskId);
+    }
+
+    public void executeAll() {
+        List<TaskConfigDTO<? extends TaskExecutable>> allTasks = getAllTasks();
+        taskExecutor.asyncExecute(allTasks);
     }
 }

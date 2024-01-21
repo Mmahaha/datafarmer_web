@@ -1,6 +1,6 @@
 package kd.fi.gl.datafarmer.dto;
 
-import kd.fi.gl.datafarmer.core.task.TaskParam;
+import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.core.task.enums.TaskStatus;
 import kd.fi.gl.datafarmer.core.task.enums.TaskType;
 import kd.fi.gl.datafarmer.model.TaskConfig;
@@ -12,7 +12,7 @@ import kd.fi.gl.datafarmer.model.TaskConfig;
  * @author ysj
  * @date 2024/1/19
  */
-public class TaskConfigDTO<T extends TaskParam> {
+public class TaskConfigDTO<T extends TaskExecutable> {
 
     private TaskType taskType;
     /**
