@@ -28,11 +28,15 @@ public class TaskDao {
     private final DB db;
 
     public List<TaskConfig> findAll() {
-        return null;
+        List<Map<String, Object>> rows = container.getFi()
+                .queryForList("select * from datafarmer_task");
+        return mapRowsToEntities(rows);
     }
 
     public List<TaskConfig> findByTaskType(TaskType taskType) {
-        return null;
+        List<Map<String, Object>> rows = container.getFi()
+                .queryForList("select * from datafarmer_task where ftasktype = ?", taskType.name());
+        return mapRowsToEntities(rows);
     }
 
     public List<TaskConfig> findByTaskStatus(TaskStatus taskStatus) {

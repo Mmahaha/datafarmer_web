@@ -12,6 +12,7 @@ import kd.fi.gl.datafarmer.model.TaskConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,11 @@ public class TaskService {
 
     public List<TaskConfigDTO<? extends TaskExecutable>> getAllReadyTasks() {
         List<TaskConfig> taskConfigs = taskDao.findByTaskStatus(TaskStatus.READY);
+        return taskConfigs.stream().map(taskConfigMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<TaskConfigDTO<? extends TaskExecutable>> getAllTasks() {
+        List<TaskConfig> taskConfigs = taskDao.findAll();
         return taskConfigs.stream().map(taskConfigMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -74,5 +80,9 @@ public class TaskService {
     public void executeAll() {
         List<TaskConfigDTO<? extends TaskExecutable>> allTasks = getAllReadyTasks();
         taskExecutor.asyncExecute(allTasks);
+    }
+
+    public List<String> getAllTaskTypes() {
+        return Arrays.stream(TaskType.values()).map(Enum::name).collect(Collectors.toList());
     }
 }

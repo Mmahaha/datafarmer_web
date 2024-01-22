@@ -33,6 +33,21 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    // 查询所有任务
+    @GetMapping
+    public ApiResponse<List<TaskConfigDTO<? extends TaskExecutable>>> getAllTasks() {
+        return ApiResponse.success(taskService.getAllTasks());
+    }
+
+    // 查询所有任务类型
+    @GetMapping("/types")
+    public ApiResponse<List<String>> getAllTaskTypes() {
+        // 调用 taskService 或者其他服务层方法获取所有任务类型
+        List<String> taskTypes = taskService.getAllTaskTypes();
+        return ApiResponse.success(taskTypes);
+    }
+
+
     // 查询所有灌数任务
     @GetMapping("/irrigate")
     public ApiResponse<List<TaskConfigDTO<IrrigateTaskExecutable>>> getAllIrrigateTasks() {
@@ -53,7 +68,7 @@ public class TaskController {
 
     // 创建任务
     @PostMapping("/irrigate")
-    public ApiResponse<Boolean> createTask(@RequestBody TaskConfigDTO<IrrigateTaskExecutable> taskConfigDTO) {
+    public ApiResponse<Boolean> createIrrigateTask(@RequestBody TaskConfigDTO<IrrigateTaskExecutable> taskConfigDTO) {
         taskService.createTask(taskConfigDTO);
         return ApiResponse.success(Boolean.TRUE);
     }
