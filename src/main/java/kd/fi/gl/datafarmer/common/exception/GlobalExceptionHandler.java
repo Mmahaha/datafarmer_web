@@ -27,9 +27,18 @@ public class GlobalExceptionHandler {
         return ApiResponse.failed("数据库执行异常：" + e.getMessage());
     }
 
+    @ExceptionHandler(ParseConfigException.class)
+    public ApiResponse<String> handleParseConfigException(ParseConfigException e) {
+        return ApiResponse.failed("配置解析异常：" + e.getMessage());
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ApiResponse<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ApiResponse.failed("参数异常：" + e.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ApiResponse<String> handleRuntimeException(RuntimeException e) {
-        return ApiResponse.failed(e.getMessage());
+        return ApiResponse.failed("未知异常：" + e.getMessage());
     }
 
 }

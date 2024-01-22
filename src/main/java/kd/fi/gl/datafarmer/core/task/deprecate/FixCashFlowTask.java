@@ -1,10 +1,9 @@
-package kd.fi.gl.datafarmer.core.task.impl;
+package kd.fi.gl.datafarmer.core.task.deprecate;
 
 
 import kd.fi.gl.datafarmer.core.util.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.task.AsyncTaskExecutor;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;

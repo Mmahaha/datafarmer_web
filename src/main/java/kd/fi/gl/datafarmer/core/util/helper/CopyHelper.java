@@ -1,5 +1,6 @@
 package kd.fi.gl.datafarmer.core.util.helper;
 
+import lombok.SneakyThrows;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ public class CopyHelper implements AutoCloseable {
     private static final String COPY_BAL_$PK_SQL = "copy t_gl_balance$pk (fpk, findex)" +
             " from stdin with csv";
 
-    private static final String COPY_BALANCE_SQL = "copy t_gl_balance$%d (fid, fperiodid, fendperiodid, faccounttableid, faccountid, fcurrencyid, fbeginfor, fbeginlocal, fdebitfor, fdebitlocal, fcreditfor, fcreditlocal, fyeardebitfor, fyeardebitlocal, fyearcreditfor, fyearcreditlocal, fendfor, fendlocal, fcount, forgid, fbooktypeid, fassgrpid)" +
+    private static final String COPY_BALANCE_SQL = "copy t_gl_balance (fid, fperiodid, fendperiodid, faccounttableid, faccountid, fcurrencyid, fbeginfor, fbeginlocal, fdebitfor, fdebitlocal, fcreditfor, fcreditlocal, fyeardebitfor, fyeardebitlocal, fyearcreditfor, fyearcreditlocal, fendfor, fendlocal, fcount, forgid, fbooktypeid, fassgrpid)" +
             " from stdin with csv";
 
     private static final String COPY_CASH_FLOW_SQL = "copy t_gl_cashflow (fid,fperiodid,fcfitemid,forgid,famount,fbooktypeid,fyearamount,fendperiodid,fcount,fcurrencyid)" +
@@ -118,10 +119,10 @@ public class CopyHelper implements AutoCloseable {
      *
      * @param csvStr       形如 ["123,456","234,456"] 的csv字符串列表
      */
-    public long copyBalance(int shardingIndex, List<String> csvStr) {
+    public long copyBalance(List<String> csvStr) {
         if (csvStr.isEmpty()) {return 0L;}
         try {
-            return copyManager.copyIn(String.format(COPY_BALANCE_SQL, shardingIndex), new StringReader(String.join("\n", csvStr)));
+            return copyManager.copyIn(COPY_BALANCE_SQL, new StringReader(String.join("\n", csvStr)));
         } catch (Exception e) {
             logger.error("copy balance error", e);
             throw new RuntimeException(e);
@@ -174,7 +175,8 @@ public class CopyHelper implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    @SneakyThrows
+    public void close(){
         if (this.connection != null) {
             this.connection.close();
             this.connection = null;

@@ -1,11 +1,11 @@
-package kd.fi.gl.datafarmer.controller.impl;
+package kd.fi.gl.datafarmer.controller;
 
 import kd.fi.gl.datafarmer.common.ApiResponse;
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
-import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.service.TaskService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,16 +28,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/tasks")
 @CrossOrigin(originPatterns = "*")
+@RequiredArgsConstructor
 public class TaskController {
 
-    @Autowired
-    private TaskService taskService;
+    private final TaskService taskService;
 
     // 查询所有灌数任务
     @GetMapping("/irrigate")
-    @Autowired
     public ApiResponse<List<TaskConfigDTO<IrrigateTaskExecutable>>> getAllIrrigateTasks() {
         return ApiResponse.success(taskService.getAllIrrigateTasks());
+    }
+
+    @PostMapping("/submit")
+    public ApiResponse<Boolean> submit() {
+        taskService.executeAll();
+        return ApiResponse.success(Boolean.TRUE);
     }
 
     @GetMapping("/{taskId}")
@@ -47,8 +52,8 @@ public class TaskController {
 
 
     // 创建任务
-    @PostMapping
-    public ApiResponse<Boolean> createTask(@RequestBody TaskConfigDTO<TaskExecutable> taskConfigDTO) {
+    @PostMapping("/irrigate")
+    public ApiResponse<Boolean> createTask(@RequestBody TaskConfigDTO<IrrigateTaskExecutable> taskConfigDTO) {
         taskService.createTask(taskConfigDTO);
         return ApiResponse.success(Boolean.TRUE);
     }

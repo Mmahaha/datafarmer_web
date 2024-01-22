@@ -1,4 +1,4 @@
-package kd.fi.gl.datafarmer.core.task.param;
+package kd.fi.gl.datafarmer.core.task.impl;
 
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 

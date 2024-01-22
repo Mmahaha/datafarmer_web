@@ -4,12 +4,12 @@ import kd.fi.gl.datafarmer.core.executor.TaskExecutor;
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.core.task.enums.TaskStatus;
 import kd.fi.gl.datafarmer.core.task.enums.TaskType;
-import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.dao.TaskDao;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.mapper.TaskConfigMapper;
 import kd.fi.gl.datafarmer.model.TaskConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,20 +23,19 @@ import java.util.stream.Collectors;
  */
 
 @Service
+@RequiredArgsConstructor
 @SuppressWarnings("unchecked")
 public class TaskService {
 
-    @Autowired
-    private TaskDao taskDao;
+    private final TaskDao taskDao;
 
-    @Autowired
-    private TaskExecutor taskExecutor;
+    private final TaskExecutor taskExecutor;
 
-    @Autowired
-    private TaskConfigMapper taskConfigMapper;
+    private final TaskConfigMapper taskConfigMapper;
 
-    public List<TaskConfigDTO<? extends TaskExecutable>> getAllTasks() {
-        List<TaskConfig> taskConfigs = taskDao.findAll();
+
+    public List<TaskConfigDTO<? extends TaskExecutable>> getAllReadyTasks() {
+        List<TaskConfig> taskConfigs = taskDao.findByTaskStatus(TaskStatus.READY);
         return taskConfigs.stream().map(taskConfigMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -73,7 +72,7 @@ public class TaskService {
     }
 
     public void executeAll() {
-        List<TaskConfigDTO<? extends TaskExecutable>> allTasks = getAllTasks();
+        List<TaskConfigDTO<? extends TaskExecutable>> allTasks = getAllReadyTasks();
         taskExecutor.asyncExecute(allTasks);
     }
 }

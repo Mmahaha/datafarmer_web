@@ -2,6 +2,9 @@ package kd.fi.gl.datafarmer.model;
 
 import kd.fi.gl.datafarmer.core.task.enums.TaskStatus;
 import kd.fi.gl.datafarmer.core.task.enums.TaskType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 /**
  * Description:任务的数据库实体类
@@ -10,6 +13,9 @@ import kd.fi.gl.datafarmer.core.task.enums.TaskType;
  * @date 2024/1/14
  */
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaskConfig {
 
     private long id;

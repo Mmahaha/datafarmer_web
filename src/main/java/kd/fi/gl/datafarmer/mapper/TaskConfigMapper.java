@@ -5,6 +5,7 @@ import kd.fi.gl.datafarmer.common.util.JsonUtils;
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.model.TaskConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,10 +16,10 @@ import org.springframework.stereotype.Component;
  * @date 2024/1/17
  */
 @Component
+@RequiredArgsConstructor
 public class TaskConfigMapper {
 
-    @Autowired
-    private JdbcTemplateContainer container;
+    private final JdbcTemplateContainer container;
 
     public TaskConfigDTO<? extends TaskExecutable> toDTO(TaskConfig taskConfig) {
         Class<? extends TaskExecutable> paramClass = taskConfig.getTaskType().getParamClass();
@@ -27,6 +28,7 @@ public class TaskConfigMapper {
         taskConfigDTO.setTaskStatus(taskConfig.getTaskStatus());
         taskConfigDTO.setMessage(taskConfig.getMessage());
         taskConfigDTO.setTaskParam(JsonUtils.fromJson(taskConfig.getTaskParam(), paramClass));
+        taskConfigDTO.setId(taskConfig.getId());
         return taskConfigDTO;
     }
 

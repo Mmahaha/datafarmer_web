@@ -30,7 +30,7 @@ public class CopyHelperMock extends CopyHelper {
     }
 
     @Override
-    public long copyBalance(int shardingIndex, List<String> csvStr) {
+    public long copyBalance(List<String> csvStr) {
         return csvStr.size();
     }
 

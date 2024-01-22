@@ -6,104 +6,71 @@ import kd.fi.gl.datafarmer.core.bean.CashInfo;
 import kd.fi.gl.datafarmer.core.bean.CashSumInfo;
 import kd.fi.gl.datafarmer.core.util.BookService;
 import kd.fi.gl.datafarmer.core.util.DB;
-import kd.fi.gl.datafarmer.core.util.DateUtils;
 import kd.fi.gl.datafarmer.core.util.FastStringUtils;
 import kd.fi.gl.datafarmer.core.util.PeriodVOBuilder;
 import kd.fi.gl.datafarmer.core.util.RowsBuilder;
 import kd.fi.gl.datafarmer.core.util.VoucherCountAccumulator;
 import kd.fi.gl.datafarmer.core.util.helper.CopyHelper;
-import kd.fi.gl.datafarmer.core.util.sharding.BalanceShardingService;
-import kd.fi.gl.datafarmer.core.util.sharding.VoucherShardingService;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-
-import static kd.fi.gl.datafarmer.core.task.impl.VoucherIrrigateTask.IrrigateResult;
 
 /**
- * 凭证灌输任务，按组织+期间进行构造
+ * Description: 灌数任务的子任务，按组织+期间拆分
+ *
+ * @author ysj
+ * @date 2024/1/21
  */
+
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+@Data
 @Slf4j
-public class VoucherIrrigateTask implements Callable<IrrigateResult> {
+public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
 
-    private final int repetition;   // 重复度
-    private final int entryRatio;   // 头行比
-    private final List<Long> accountIds;    // 科目id集合
-    private final List<Long> assgrpIds;     // 纬度id集合
-    private final int localRate;            // 分录行汇率
-    private final long xorSuffix;           // 异或前缀，用于后面和科目纬度后续异或以生成金额
-    private final long beginVoucherId;      // 凭证起始id，形如100012023011:去重标识(1)+组织序号(4)+期间编码(6)+科目类型(1)+凭证序号(4)
-    private final RowsBuilder rowsBuilder;  // 行构造器
-    protected CopyHelper copyHelper;    // copyIn帮助类，声明为protected以便单元测试
-    private final String taskIdentity;      // 任务标识，代表此任务的纬度
-    private List<String> bookedDateRangeList;   // 记账日期范围
-    private int bookedDateIndex = 0;        // 记账日期遍历指针，不断移动重复
-    private int mainCfItemIndex = 0;        // 主表项目遍历指针，不断移动并重复
-    private int suppCfItemIndex = 0;        // 附表项目遍历指针，不断移动并重复
-    private VoucherCountAccumulator voucherCountAccumulator;    // 凭证计数器
-    private final List<Long> mainCfItemIds;
-    private final List<Long> suppCfItemIds;
-    private final boolean isCash;
-    private static final CashInfo zeroCashInfo = new CashInfo(0,0,0);
-    private final int voucherShardingIndex;
-    private final int balanceShardingIndex;
+    private BookService.BookVO bookVO;
+    private PeriodVOBuilder.PeriodVO periodVO;
+    private List<Long> accountIds;
+    private List<Long> assgrpIds;
+    private List<Long> mainCFItemIds;
+    private List<Long> suppCFItemIds;
+    private int voucherShardingIndex;
+    private int localRate;
+    private long xorSuffix;
+    private long beginVoucherId;
+    private RowsBuilder rowsBuilder;
+    private String taskIdentity;
+    private List<String> bookedDateRangeList;
+    private int bookedDateIndex = 0;
+    private int mainCFItemIndex = 0;
+    private int suppCFItemIndex = 0;
+    private final VoucherCountAccumulator voucherCountAccumulator = new VoucherCountAccumulator();
 
-    /**
-     * 凭证/余额灌输任务
-     *
-     * @param bookVO          账簿对象
-     * @param periodVO        期间对象
-     * @param entryCurrencyId 分录币别id
-     * @param entryRatio      凭证总分录数
-     * @param accountIds      科目id集合
-     * @param assgrpIds       核算纬度id集合，与科目形成笛卡尔积
-     * @param repetition      重复度：每个科目+纬度 重复使用的次数
-     */
-    public VoucherIrrigateTask(BookService.BookVO bookVO, PeriodVOBuilder.PeriodVO periodVO, long entryCurrencyId, int entryRatio,
-                               List<Long> accountIds, List<Long> assgrpIds, int repetition, boolean isCash,
-                               List<Long> mainCfItemIds, List<Long> suppCfItemIds, int distinctSign, String accountType) {
-        // 头行比必须为偶数
-        Assert.isTrue((entryRatio & 1) == 0, "entryRatio must be even!");
-        // 科目 * 纬度 的数量需要为偶数
-        Assert.isTrue(((accountIds.size() * assgrpIds.size()) & 1) == 0, "accountIds multiply assgrpIds must be even!");
-        this.taskIdentity = String.format("orgId:%d,periodId:%d,currencyId:%d,accountIdSize:%s,assgrpIdSize:%s,repetition:%d,entryRatio:%d,accountType:%s",
-                bookVO.getId(), periodVO.getId(), entryCurrencyId, accountIds.size(), assgrpIds.size(), repetition, entryRatio, accountType);
-        // 是现金类型时，主附表不能为空
-//        Preconditions.checkArgument(!isCash || (!mainCfItemIds.isEmpty() && !suppCfItemIds.isEmpty()), "mainCfItemIds can not be empty when isCash!");
-        voucherShardingIndex = VoucherShardingService.getShardingIndex(bookVO.getOrgId(), periodVO.getId());
-        balanceShardingIndex = BalanceShardingService.getShardingIndex(bookVO.getOrgId());
-        long periodId = periodVO.getId();
-        this.repetition = repetition;
-        this.entryRatio = entryRatio;
-        this.accountIds = accountIds;
-        this.assgrpIds = assgrpIds;
-        this.localRate = bookVO.getLocalCurrencyId() == entryCurrencyId ? 1 : 10;
-        this.xorSuffix = bookVO.getOrgId() ^ periodId ^ entryCurrencyId;
-        int periodNumber = (int) ((periodId / 1_0000) % 1_0000 * 100 + ((periodId / 10) % 100)); // 202201
-        this.beginVoucherId = distinctSign * 1_000_0000_0000_0000L + bookVO.getIndex() * 1_000_0000_0000L
-                + periodNumber * 10_0000L + Integer.parseInt(accountType) * 1_0000L;
-        this.rowsBuilder = new RowsBuilder(bookVO, periodVO, entryCurrencyId);
-        this.bookedDateRangeList = DateUtils.generateDateRange(periodVO.getBeginDate(), periodVO.getEndDate());
-        this.voucherCountAccumulator = new VoucherCountAccumulator();
-        this.isCash = isCash;
-        this.mainCfItemIds = mainCfItemIds;
-        this.suppCfItemIds = suppCfItemIds;
+    // LazyInit
+    @Setter(AccessLevel.NONE)
+    private CopyHelper copyHelper;
+
+    @Override
+    public boolean supportSplit() {
+        return false;
     }
 
     @Override
-    public IrrigateResult call() throws Exception {
+    public void execute() {
         try {
             this.copyHelper = DB.getCopyHelper();
-//            log.info("开始执行任务，任务标识:{}", taskIdentity);
-            return callInternal();
+            executeInternal();
         } catch (Exception e) {
             log.error("执行任务出现异常,taskIdentity=" + taskIdentity, e);
-            throw e;
+            throw new RuntimeException("执行任务出现异常", e);
         } finally {
             if (copyHelper != null) {
                 copyHelper.close();
@@ -111,8 +78,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
         }
     }
 
-    private IrrigateResult callInternal() {
-//        long startTick = System.currentTimeMillis();
+    private void executeInternal() {
         List<String> headStrRows = new ArrayList<>(10000 / entryRatio + 1);
         List<String> $pkStrRows = new ArrayList<>(10000 / entryRatio + 1);
         List<String> entryStrRows = new ArrayList<>(10000);
@@ -131,7 +97,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
         AmtInfo amtInfo = null;
         int loopTimes = repetition;
         String curDate;
-        CashInfo cashInfo = zeroCashInfo;
+        CashInfo cashInfo = CashInfo.ZERO;
         Map<Long, AcctSumAmtInfo> acctSumAmtInfoMap = new HashMap<>(accountIds.size());
         Map<Long, CashSumInfo> cashSumInfoMap = new HashMap<>(100);
         while (--loopTimes >= 0) {
@@ -141,10 +107,10 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
                     // 奇数行切换一次金额信息，偶数行切换一次现金流量信息
                     if ((entrySeq & 1) == 0) {
                         amtInfo = nextAmtInfo(accountId, assgrpId);
-                        if (isCash) {
-                            cashInfo = zeroCashInfo; //下一行为现金，重置
+                        if (containsCashFlow) {
+                            cashInfo = CashInfo.ZERO; //下一行为现金，重置
                         }
-                    } else if (isCash) {
+                    } else if (containsCashFlow) {
                         cashInfo = nextCashInfo(amtInfo.getLocAmt());
                         isEquity = true;  // 下面要处理的行为权益类，无纬度
                     }
@@ -163,7 +129,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
                             balance$PkRows.add(rowsBuilder.buildBalance$Pk(entryId, 9));
                             balanceStrRows.add(rowsBuilder.buildBalance(entryId, accountId, assgrpId, (entrySeq & 1) == 1, amtInfo, repetition));
                         }
-                        if (isCash && cashInfo != zeroCashInfo) {
+                        if (containsCashFlow && cashInfo != CashInfo.ZERO) {
                             // 主表
                             cashSumInfoMap.compute(cashInfo.getMainCfItemId(), (cfItemId,cashSumInfo) -> {
                                 if (cashSumInfo == null) {cashSumInfo = new CashSumInfo((Long) params[2], cfItemId);}
@@ -178,7 +144,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
                     }
                     if (entrySeq == entryRatio) {
                         // 构造头
-                        headStrRows.add(rowsBuilder.buildVoucherHead(voucherIndex, voucherId, billno, curDate = nextDate(), isCash));
+                        headStrRows.add(rowsBuilder.buildVoucherHead(voucherIndex, voucherId, billno, curDate = nextDate(), containsCashFlow));
                         // 累计凭证计数
                         voucherCountAccumulator.accumulate(curDate, 1, entrySeq, voucherId);
                         // 构造快速索引
@@ -198,7 +164,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
         // 最后一批分录的凭证头如果还没生成，则进行补充
         if (entrySeq != 0) {
 //            log.info("为最后一批不到头行比的分录补充凭证头,taskIdentity={}", taskIdentity);
-            headStrRows.add(rowsBuilder.buildVoucherHead(voucherIndex, voucherId, billno, curDate = nextDate(), isCash));
+            headStrRows.add(rowsBuilder.buildVoucherHead(voucherIndex, voucherId, billno, curDate = nextDate(), containsCashFlow));
             voucherCountAccumulator.accumulate(curDate, 1, entrySeq, voucherId);
         }
         // 保存最后一批数据
@@ -222,13 +188,12 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
 //        CoreLogger.LOG.info("import data successfully, taskIdentity: {}, voucher count: {}, entry count: {}, balance count: {}, sumBalance count:{}, cost {} seconds.",
 //                this.taskIdentity, result.getVoucherCount(), result.getEntryCount(),
 //                result.getBalanceCount(), result.getSumBalanceCount(), (System.currentTimeMillis() - startTick) / 1000);
-        return result;
     }
 
     private CashInfo nextCashInfo(int locAmt) {
-        CashInfo result = new CashInfo(mainCfItemIds.get(mainCfItemIndex), suppCfItemIds.get(suppCfItemIndex), locAmt);
-        mainCfItemIndex = (mainCfItemIndex + 1) % mainCfItemIds.size();
-        suppCfItemIndex = (suppCfItemIndex + 1) % suppCfItemIds.size();
+        CashInfo result = new CashInfo(mainCFItemIds.get(mainCFItemIndex), suppCFItemIds.get(suppCFItemIndex), locAmt);
+        mainCFItemIndex = (mainCFItemIndex + 1) % mainCFItemIds.size();
+        suppCFItemIndex = (suppCFItemIndex + 1) % suppCFItemIds.size();
         return result;
     }
 
@@ -239,7 +204,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
         result.voucherCount += copyHelper.copyVoucherHead(voucherShardingIndex, headStrRows);
         copyHelper.copyVoucher$PK($pkStrRows);
         result.entryCount += copyHelper.copyVoucherEntry(voucherShardingIndex, entryStrRows);
-        result.balanceCount += copyHelper.copyBalance(balanceShardingIndex, balanceStrRows);
+        result.balanceCount += copyHelper.copyBalance(balanceStrRows);
         copyHelper.copyBalance$PK(balance$PkStrRows);
         result.cashFlowCount += copyHelper.copyCashFlow(cashBalanceStrRows);
 //        log.info("{}行凭证及关联数据插入耗时{}ms", entryStrRows.size(), System.currentTimeMillis() - start);
@@ -257,7 +222,7 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
     }
 
     private long nextEntryId(long voucherId, int entrySeq) {
-        return voucherId * 100 + entrySeq;
+        return voucherId * 10000 + entrySeq;
     }
 
     private String nextBillno(int voucherIndex) {
@@ -315,4 +280,6 @@ public class VoucherIrrigateTask implements Callable<IrrigateResult> {
                     '}';
         }
     }
+
+
 }

@@ -1,4 +1,4 @@
-package kd.fi.gl.datafarmer.core.task.impl;
+package kd.fi.gl.datafarmer.core.task.deprecate;
 
 import kd.fi.gl.datafarmer.core.util.DB;
 import kd.fi.gl.datafarmer.core.util.sharding.BalanceShardingService;

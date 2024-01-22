@@ -1,8 +1,8 @@
 package kd.fi.gl.datafarmer.core.task.enums;
 
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
-import kd.fi.gl.datafarmer.core.task.param.IrrigateTaskExecutable;
-import kd.fi.gl.datafarmer.core.task.param.RebuildIndexTaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
 
 /**
  * Description: 枚举所有的任务类型
