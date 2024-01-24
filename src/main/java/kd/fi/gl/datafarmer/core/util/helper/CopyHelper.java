@@ -25,7 +25,7 @@ public class CopyHelper implements AutoCloseable {
     private static final String COPY_BALANCE_SQL = "copy t_gl_balance (fid, fperiodid, fendperiodid, faccounttableid, faccountid, fcurrencyid, fbeginfor, fbeginlocal, fdebitfor, fdebitlocal, fcreditfor, fcreditlocal, fyeardebitfor, fyeardebitlocal, fyearcreditfor, fyearcreditlocal, fendfor, fendlocal, fcount, forgid, fbooktypeid, fassgrpid)" +
             " from stdin with csv";
 
-    private static final String COPY_CASH_FLOW_SQL = "copy t_gl_cashflow (fid,fperiodid,fcfitemid,forgid,famount,fbooktypeid,fyearamount,fendperiodid,fcount,fcurrencyid)" +
+    private static final String COPY_CASH_FLOW_SQL = "copy t_gl_cashflow (fid,fperiodid,fcfitemid,fassgrpid,forgid,famount,fbooktypeid,fyearamount,fendperiodid,fcount,fcurrencyid)" +
             " from stdin with csv";
 
     private static final String COPY_SUM_BALANCE_SQL = "copy t_gl_balance_accsum (fid, fperiodid, fendperiodid, faccounttableid, faccountid, fcurrencyid, fbeginfor, fbeginlocal, fdebitfor, fdebitlocal, fcreditfor, fcreditlocal, fyeardebitfor, fyeardebitlocal, fyearcreditfor, fyearcreditlocal, fendfor, fendlocal, fcount, forgid, fbooktypeid)" +

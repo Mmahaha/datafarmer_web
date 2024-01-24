@@ -32,6 +32,13 @@ public class DB {
         return container.getSys();
     }
 
+    public static JdbcTemplate getJdbcTemplate(String route) {
+        if (route.equalsIgnoreCase("fi")) {
+            return getFiJdbcTemplate();
+        }
+        return getSysJdbcTemplate();
+    }
+
     @Autowired
     public void setContainer(JdbcTemplateContainer container) {
         log.info("setContainer is invoked.");

@@ -23,6 +23,17 @@ public class ThreadPoolConfig implements AsyncConfigurer {
         executor.setCorePoolSize(12);
         executor.setMaxPoolSize(12);
 //        executor.setTaskDecorator();
+        executor.setThreadNamePrefix("datafarmer-");
+        return executor;
+    }
+
+    @Bean(name = "defaultExecutor")
+    public ThreadPoolTaskExecutor defaultExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(12);
+        executor.setMaxPoolSize(12);
+//        executor.setTaskDecorator();
+        executor.setThreadNamePrefix("default-");
         return executor;
     }
 

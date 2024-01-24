@@ -1,6 +1,8 @@
 package kd.fi.gl.datafarmer.common.exception;
 
 import kd.fi.gl.datafarmer.common.ApiResponse;
+import kd.fi.gl.datafarmer.common.exception.impl.DatabaseNotInitializedException;
+import kd.fi.gl.datafarmer.common.exception.impl.ParseConfigException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -36,8 +38,8 @@ public class GlobalExceptionHandler {
         return ApiResponse.failed("参数异常：" + e.getMessage());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ApiResponse<String> handleRuntimeException(RuntimeException e) {
+    @ExceptionHandler(Exception.class)
+    public ApiResponse<String> handleException(Exception e) {
         return ApiResponse.failed("未知异常：" + e.getMessage());
     }
 

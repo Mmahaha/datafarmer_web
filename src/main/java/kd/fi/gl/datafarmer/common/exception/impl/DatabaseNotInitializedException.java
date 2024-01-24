@@ -1,4 +1,4 @@
-package kd.fi.gl.datafarmer.common.exception;
+package kd.fi.gl.datafarmer.common.exception.impl;
 
 /**
  * Description:

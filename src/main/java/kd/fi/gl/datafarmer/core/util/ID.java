@@ -70,13 +70,17 @@ public class ID {
     }
 
     public static void main(String[] args) {
-        ID generator = new ID(1, 1);
-        long l = System.currentTimeMillis();
-        // Generate and print 10 IDs
-        for (int i = 0; i < 1_0000_0000; i++) {
-            long id = generator.nextId();
+        Runnable runnable = () -> {
+            long l = System.currentTimeMillis();
+            // Generate and print 10 IDs
+            for (int i = 0; i < 1_0000; i++) {
+                long id = ID.genLongId();
 //            System.out.println("Generated ID: " + id);
+            }
+            System.out.println(System.currentTimeMillis() - l);
+        };
+        for (int i = 0; i < 10; i++) {
+            new Thread(runnable).start();
         }
-        System.out.println(System.currentTimeMillis() - l);
     }
 }

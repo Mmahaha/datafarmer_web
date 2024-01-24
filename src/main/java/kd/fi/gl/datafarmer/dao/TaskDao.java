@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class TaskDao {
 
     private final JdbcTemplateContainer container;
-    private final DB db;
 
     public List<TaskConfig> findAll() {
         List<Map<String, Object>> rows = container.getFi()
@@ -64,6 +63,16 @@ public class TaskDao {
 
     public void deleteTask(Long taskId) {
 
+    }
+
+    public void updateTaskStatus(Long taskId, TaskStatus taskStatus) {
+        container.getFi()
+                .update("update datafarmer_task set ftaskstatus = ? where fid = ?", taskStatus.name(), taskId);
+    }
+
+    public void updateTaskMessage(Long taskId, String message) {
+        container.getFi()
+                .update("update datafarmer_task set fmessage = ? where fid = ?", message, taskId);
     }
 
     private List<TaskConfig> mapRowsToEntities(List<Map<String,Object>> rows) {

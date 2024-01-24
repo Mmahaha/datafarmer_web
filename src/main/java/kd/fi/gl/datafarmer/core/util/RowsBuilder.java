@@ -119,26 +119,20 @@ public class RowsBuilder {
         return stringJoiner.toString();
     }
 
-    public String buildBalance$Pk(long fid, int index) {
-        StringJoiner stringJoiner = new StringJoiner(",");
-        stringJoiner.add(String.valueOf(fid))//fid
-                .add(String.valueOf(index));//index
-        return stringJoiner.toString();
-    }
-
-    public String buildCashFlow(long fid, long cfItemId, long amount, int repetition) {
+    public String buildCashFlow(long fid, long cfItemId, long assgrpId, long amount, int repetition) {
         long cashAmount = amount * repetition;
         StringJoiner stringJoiner = new StringJoiner(",");
         stringJoiner.add(String.valueOf(fid))//fid
                 .add(periodIdStr)//fperiodid
                 .add(String.valueOf(cfItemId))//fcfitemid
+                .add(String.valueOf(assgrpId))//fassgrpid
                 .add(orgIdStr)//forgid
                 .add(String.valueOf(cashAmount))//famount
                 .add(bookTypeIdStr)//fbooktypeid
                 .add(String.valueOf(cashAmount))//fyearamount
                 .add("99999999999")//fendperiodid
                 .add(String.valueOf(repetition))//fcount
-                .add(entryCurrencyIdStr);//fcurrencyid
+                .add(localCurrencyIdStr);//fcurrencyid
         return stringJoiner.toString();
     }
 

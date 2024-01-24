@@ -10,6 +10,7 @@ import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.mapper.TaskConfigMapper;
 import kd.fi.gl.datafarmer.model.TaskConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -84,5 +85,23 @@ public class TaskService {
 
     public List<String> getAllTaskTypes() {
         return Arrays.stream(TaskType.values()).map(Enum::name).collect(Collectors.toList());
+    }
+
+    public void setTaskInRunning(Long taskId) {
+        taskDao.updateTaskStatus(taskId, TaskStatus.RUNNING);
+    }
+
+    public void setTaskFinished(Long taskId) {
+        taskDao.updateTaskStatus(taskId, TaskStatus.FINISHED);
+        taskDao.updateTaskMessage(taskId, "finished!");
+    }
+
+    public void setTaskError(Long taskId, String message) {
+        taskDao.updateTaskStatus(taskId, TaskStatus.ERROR);
+        taskDao.updateTaskMessage(taskId, message);
+    }
+
+    public void updateTaskMessage(Long taskId, String message) {
+        taskDao.updateTaskMessage(taskId, message);
     }
 }

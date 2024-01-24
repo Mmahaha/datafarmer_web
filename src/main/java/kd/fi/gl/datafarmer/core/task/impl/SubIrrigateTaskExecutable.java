@@ -7,6 +7,7 @@ import kd.fi.gl.datafarmer.core.bean.CashSumInfo;
 import kd.fi.gl.datafarmer.core.util.BookService;
 import kd.fi.gl.datafarmer.core.util.DB;
 import kd.fi.gl.datafarmer.core.util.FastStringUtils;
+import kd.fi.gl.datafarmer.core.util.ID;
 import kd.fi.gl.datafarmer.core.util.PeriodVOBuilder;
 import kd.fi.gl.datafarmer.core.util.RowsBuilder;
 import kd.fi.gl.datafarmer.core.util.VoucherCountAccumulator;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -42,16 +44,17 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
     private List<Long> assgrpIds;
     private List<Long> mainCFItemIds;
     private List<Long> suppCFItemIds;
+    private List<Long> mainCFAssgrpIds;
     private int voucherShardingIndex;
     private int localRate;
     private long xorSuffix;
-    private long beginVoucherId;
+//    private long beginVoucherId;
     private RowsBuilder rowsBuilder;
     private String taskIdentity;
     private List<String> bookedDateRangeList;
     private int bookedDateIndex = 0;
-    private int mainCFItemIndex = 0;
-    private int suppCFItemIndex = 0;
+    private Iterator<Long> mainCFItemIter;
+    private Iterator<Long> mainCFAssgrpIter;
     private final VoucherCountAccumulator voucherCountAccumulator = new VoucherCountAccumulator();
 
     // LazyInit
@@ -66,8 +69,10 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
     @Override
     public void execute() {
         try {
+            log.info("开始执行任务,orgId={},periodId={}", bookVO.getOrgId(), periodVO.getId());
             this.copyHelper = DB.getCopyHelper();
             executeInternal();
+            log.info("任务执行完成,orgId={},periodId={}", bookVO.getOrgId(), periodVO.getId());
         } catch (Exception e) {
             log.error("执行任务出现异常,taskIdentity=" + taskIdentity, e);
             throw new RuntimeException("执行任务出现异常", e);
@@ -99,12 +104,10 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
         String curDate;
         CashInfo cashInfo = CashInfo.ZERO;
         Map<Long, AcctSumAmtInfo> acctSumAmtInfoMap = new HashMap<>(accountIds.size());
-        Map<Long, CashSumInfo> cashSumInfoMap = new HashMap<>(100);
         while (--loopTimes >= 0) {
             for (Long assgrpId : assgrpIds) {
                 for (Long accountId : accountIds) {
-                    boolean isEquity = false;   //是否权益类
-                    // 奇数行切换一次金额信息，偶数行切换一次现金流量信息
+                    // 下一行为奇数行切换一次金额信息，偶数行切换一次现金流量信息
                     if ((entrySeq & 1) == 0) {
                         amtInfo = nextAmtInfo(accountId, assgrpId);
                         if (containsCashFlow) {
@@ -112,35 +115,22 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
                         }
                     } else if (containsCashFlow) {
                         cashInfo = nextCashInfo(amtInfo.getLocAmt());
-                        isEquity = true;  // 下面要处理的行为权益类，无纬度
                     }
                     // 构造分录，先借后贷
                     entryStrRows.add(rowsBuilder.buildVoucherEntry(entryId = nextEntryId(voucherId, ++entrySeq),
-                            voucherId, entrySeq, accountId, isEquity ? 0L : assgrpId, (entrySeq & 1) == 1, amtInfo, cashInfo));
+                            voucherId, entrySeq, accountId, assgrpId, (entrySeq & 1) == 1, amtInfo, cashInfo));
+                    if (containsCashFlow && cashInfo != CashInfo.ZERO) {
+                        cashBalanceStrRows.add(rowsBuilder.buildCashFlow(entryId, cashInfo.getMainCfItemId(), cashInfo.getMainCFAssgrpId(), cashInfo.getCfAmount(), 1));
+                    }
                     // 只在最后一次重复度循环里处理余额构造
                     if (loopTimes == 0) {
-                        Object[] params = new Object[] {amtInfo, entrySeq, entryId, isEquity};  // for lambda
-                        acctSumAmtInfoMap.compute(accountId, (accId, acctSumAmtInfo) -> {
-                            if (acctSumAmtInfo == null) {acctSumAmtInfo = new AcctSumAmtInfo(accId, (Long) params[2], (boolean) params[3]);}
-                            acctSumAmtInfo.add((AmtInfo) params[0], ((int)params[1] & 1) == 1);
-                            return acctSumAmtInfo;
-                        });
-                        if (!isEquity) { // 权益类先不写余额，后续任务再从汇总余额拷贝
-                            balance$PkRows.add(rowsBuilder.buildBalance$Pk(entryId, 9));
-                            balanceStrRows.add(rowsBuilder.buildBalance(entryId, accountId, assgrpId, (entrySeq & 1) == 1, amtInfo, repetition));
-                        }
-                        if (containsCashFlow && cashInfo != CashInfo.ZERO) {
-                            // 主表
-                            cashSumInfoMap.compute(cashInfo.getMainCfItemId(), (cfItemId,cashSumInfo) -> {
-                                if (cashSumInfo == null) {cashSumInfo = new CashSumInfo((Long) params[2], cfItemId);}
-                                cashSumInfo.add(((AmtInfo)params[0]).getLocAmt());
-                                return cashSumInfo;});
-                            // 附表
-                            cashSumInfoMap.compute(cashInfo.getSuppCfItemId(), (cfItemId,cashSumInfo) -> {
-                                if (cashSumInfo == null) {cashSumInfo = new CashSumInfo((Long) params[2] + 1, cfItemId);}
-                                cashSumInfo.add(((AmtInfo)params[0]).getLocAmt());
-                                return cashSumInfo;});
-                        }
+//                        Object[] params = new Object[] {amtInfo, entrySeq, entryId};  // for lambda
+//                        acctSumAmtInfoMap.compute(accountId, (accId, acctSumAmtInfo) -> {
+//                            if (acctSumAmtInfo == null) {acctSumAmtInfo = new AcctSumAmtInfo(accId, (Long) params[2], (boolean) params[3]);}
+//                            acctSumAmtInfo.add((AmtInfo) params[0], ((int)params[1] & 1) == 1);
+//                            return acctSumAmtInfo;
+//                        });
+                        balanceStrRows.add(rowsBuilder.buildBalance(entryId, accountId, assgrpId, (entrySeq & 1) == 1, amtInfo, repetition));
                     }
                     if (entrySeq == entryRatio) {
                         // 构造头
@@ -163,20 +153,15 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
         }
         // 最后一批分录的凭证头如果还没生成，则进行补充
         if (entrySeq != 0) {
-//            log.info("为最后一批不到头行比的分录补充凭证头,taskIdentity={}", taskIdentity);
             headStrRows.add(rowsBuilder.buildVoucherHead(voucherIndex, voucherId, billno, curDate = nextDate(), containsCashFlow));
             voucherCountAccumulator.accumulate(curDate, 1, entrySeq, voucherId);
         }
         // 保存最后一批数据
         saveAndClearRows(result, headStrRows, entryStrRows, balanceStrRows, cashBalanceStrRows, $pkStrRows, balance$PkRows);
         // 单独计算汇总余额
-        for (AcctSumAmtInfo acctSumAmtInfo : acctSumAmtInfoMap.values()) {
-            sumBalanceStrRows.add(rowsBuilder.buildSumBalance(acctSumAmtInfo.getFid(), acctSumAmtInfo, repetition, assgrpIds.size()));
-        }
-        // 单独计算现金流量
-        for (CashSumInfo cashSumInfo : cashSumInfoMap.values()) {
-            cashBalanceStrRows.add(rowsBuilder.buildCashFlow(cashSumInfo.getFid(), cashSumInfo.getCfItemId(), cashSumInfo.getAmount(), repetition));
-        }
+//        for (AcctSumAmtInfo acctSumAmtInfo : acctSumAmtInfoMap.values()) {
+//            sumBalanceStrRows.add(rowsBuilder.buildSumBalance(acctSumAmtInfo.getFid(), acctSumAmtInfo, repetition, assgrpIds.size()));
+//        }
         copyHelper.copyCashFlow(cashBalanceStrRows);
         result.sumBalanceCount += copyHelper.copySumBalance(sumBalanceStrRows);
         // 单独保存凭证计数
@@ -184,17 +169,27 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
             voucherCountStrRows.add(rowsBuilder.buildVoucherCount(bookedDate, voucherCount));
         });
         copyHelper.copyVoucherCount(voucherCountStrRows);
-//        log.info("任务执行完成，result = {}, taskIdentity = {}", result, taskIdentity);
-//        CoreLogger.LOG.info("import data successfully, taskIdentity: {}, voucher count: {}, entry count: {}, balance count: {}, sumBalance count:{}, cost {} seconds.",
-//                this.taskIdentity, result.getVoucherCount(), result.getEntryCount(),
-//                result.getBalanceCount(), result.getSumBalanceCount(), (System.currentTimeMillis() - startTick) / 1000);
     }
 
+    private long curMainCFItemId = 0L;
     private CashInfo nextCashInfo(int locAmt) {
-        CashInfo result = new CashInfo(mainCFItemIds.get(mainCFItemIndex), suppCFItemIds.get(suppCFItemIndex), locAmt);
-        mainCFItemIndex = (mainCFItemIndex + 1) % mainCFItemIds.size();
-        suppCFItemIndex = (suppCFItemIndex + 1) % suppCFItemIds.size();
-        return result;
+        // 获取下一行现金行信息，主表项目只遍历依次，主表纬度循环遍历直到主表项目遍历完毕
+        if (mainCFItemIter == null) {
+            // init
+            mainCFItemIter = mainCFItemIds.iterator();
+            curMainCFItemId = mainCFItemIter.next();
+            mainCFAssgrpIter = mainCFAssgrpIds.iterator();
+        }
+        if (!mainCFAssgrpIter.hasNext() && !mainCFItemIter.hasNext()) {
+            // 两个都遍历完了，后续的分录行就不再录入现金流量
+            return CashInfo.ZERO;
+        }
+        if (!mainCFAssgrpIter.hasNext()) {
+            // 切换到下一个主表项目，同时重新遍历主表纬度
+            curMainCFItemId = mainCFItemIter.next();
+            mainCFAssgrpIter = mainCFAssgrpIds.iterator();
+        }
+        return new CashInfo(curMainCFItemId, 0L, mainCFAssgrpIter.next(), locAmt);
     }
 
     private void saveAndClearRows(IrrigateResult result, List<String> headStrRows, List<String> entryStrRows,
@@ -218,11 +213,11 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
 
 
     private long nextVoucherId(int voucherIndex) {
-        return beginVoucherId + voucherIndex;
+        return ID.genLongId();
     }
 
     private long nextEntryId(long voucherId, int entrySeq) {
-        return voucherId * 10000 + entrySeq;
+        return ID.genLongId();
     }
 
     private String nextBillno(int voucherIndex) {

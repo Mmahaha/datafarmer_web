@@ -21,15 +21,15 @@ public class AssGrpBuilder {
         int periodIdSize = periodIds.size();
         // 每批次大小
         int batchSize = assGrpIds.size() / periodIdSize;
-        if (batchSize == 0) {
-            // 维度太少
-            throw new IllegalArgumentException(
-                    String.format(
-                            "The number of assGrpIds is not sufficient to allocate for all periods, %s, periodCnt: %s",
-                            this.assGrpIds.size(), periodIdSize
-                    )
-            );
-        }
+//        if (batchSize == 0) {
+//            // 维度太少
+//            throw new IllegalArgumentException(
+//                    String.format(
+//                            "The number of assGrpIds is not sufficient to allocate for all periods, %s, periodCnt: %s",
+//                            this.assGrpIds.size(), periodIdSize
+//                    )
+//            );
+//        }
         // 将核算维度拆分
         List<List<Long>> assGrpIdsPartitions = IntStream.range(0, periodIdSize)
                 .mapToObj(i -> assGrpIds.subList(i * batchSize, i == periodIdSize - 1 ? assGrpIds.size() : (i + 1) * batchSize))

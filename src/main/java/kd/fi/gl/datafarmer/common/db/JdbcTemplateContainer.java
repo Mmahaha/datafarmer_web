@@ -1,7 +1,7 @@
 package kd.fi.gl.datafarmer.common.db;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import kd.fi.gl.datafarmer.common.exception.DatabaseNotInitializedException;
+import kd.fi.gl.datafarmer.common.exception.impl.DatabaseNotInitializedException;
 import kd.fi.gl.datafarmer.model.DBConfig;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

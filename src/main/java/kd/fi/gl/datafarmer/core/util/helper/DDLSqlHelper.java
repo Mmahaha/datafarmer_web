@@ -4,6 +4,8 @@ import kd.fi.gl.datafarmer.core.util.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class DDLSqlHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(DDLSqlHelper.class);
@@ -35,6 +37,22 @@ public class DDLSqlHelper {
         } catch (Exception e) {
             // 可能是已存在之类的
             logger.warn("[ddl]:添加表{}主键{}失败:{},ddl:{}", tableName, column, e.getMessage(), sql);
+            return 0;
+        }
+    }
+
+    public List<String> queryIndexes(String tableName) {
+        return DB.getFiJdbcTemplate()
+                .queryForList("select indexname from pg_indexes where tablename = ?", String.class, tableName);
+    }
+
+    public int dropIndex(String indexName) {
+        try {
+            logger.info("start drop index:" + indexName);
+            return DB.getFiJdbcTemplate().update("drop index " + indexName);
+        } catch (Exception e) {
+            // ignore
+            logger.warn("索引删除失败", e);
             return 0;
         }
     }
