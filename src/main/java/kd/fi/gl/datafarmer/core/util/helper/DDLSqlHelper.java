@@ -57,4 +57,15 @@ public class DDLSqlHelper {
         }
     }
 
+    public int dropConstraint(String tableName, String constraintName) {
+        try {
+            logger.info("start drop constraint:" + constraintName);
+            return DB.getFiJdbcTemplate().update(String.format("alter table %s drop constraint %s;", tableName, constraintName));
+        } catch (Exception e) {
+            // ignore
+            logger.warn("索引删除失败", e);
+            return 0;
+        }
+    }
+
 }

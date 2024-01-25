@@ -26,8 +26,8 @@ public class ProgressRecorder {
 
     public void incrementAndLog(long seconds) {
         int curProgress = progress.incrementAndGet();
-        log.info("taskId:{} progress:{}/{}, cost {} s", taskId, curProgress, total, seconds);
         if (curProgress % reportFrequency == 0) {
+            log.info("taskId:{} progress:{}/{}, cost {} s", taskId, curProgress, total, seconds);
             taskService.updateTaskMessage(taskId, String.format("%s/%s", curProgress, total));
         }
     }

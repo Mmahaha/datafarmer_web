@@ -48,8 +48,22 @@ public class DBConfigController {
     @GetMapping("/debug")
     public ApiResponse<Boolean> debug() {
 //        DDLSqlHelper ddlSqlHelper = DB.getDDLSqlHelper();
-//        for (String tGlBalance : ddlSqlHelper.queryIndexes("t_gl_cashflow")) {
-//            ddlSqlHelper.dropIndex(tGlBalance);
+//        for (Integer index : container.getFi().queryForList("select findex from t_gl_voucher$map", Integer.class)) {
+//            for (String queryIndex : ddlSqlHelper.queryIndexes("t_gl_voucher$" + index)) {
+//                if (queryIndex.contains("_pkey")) {
+//                    ddlSqlHelper.dropConstraint("t_gl_voucher$" + index, queryIndex);
+//                } else {
+//                    ddlSqlHelper.dropIndex(queryIndex);
+//                }
+//            }
+//
+//            for (String queryIndex : ddlSqlHelper.queryIndexes("t_gl_voucherentry$" + index)) {
+//                if (queryIndex.contains("_pkey")) {
+//                    ddlSqlHelper.dropConstraint("t_gl_voucherentry$" + index, queryIndex);
+//                } else {
+//                    ddlSqlHelper.dropIndex(queryIndex);
+//                }
+//            }
 //        }
         return ApiResponse.success(Boolean.TRUE);
     }

@@ -132,8 +132,8 @@ public class IrrigateTaskExecutable implements TaskExecutable {
         Assert.isTrue((entryRatio & 1) == 0, "entryRatio must be even number");
         // 勾选了现金余额，必须要有现金流量项目
         Assert.isTrue(!subIrrigateTaskExecutable.containsCashFlow ||
-                (!subIrrigateTaskExecutable.getMainCFItemIds().isEmpty() && !subIrrigateTaskExecutable.getMainCFAssgrpIds().isEmpty()),
-                "mainCFItemIds or suppCFItemIds can not be empty when containsCash!");
+                !subIrrigateTaskExecutable.getMainCFItemIds().isEmpty(),
+                "当引入现金流量时，必须要有主表项目");
     }
 
     private List<Long> fetchBaseData(String selectSql, String field) {

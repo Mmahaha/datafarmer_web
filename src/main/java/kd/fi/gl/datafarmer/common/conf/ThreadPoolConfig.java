@@ -30,8 +30,8 @@ public class ThreadPoolConfig implements AsyncConfigurer {
     @Bean(name = "defaultExecutor")
     public ThreadPoolTaskExecutor defaultExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(12);
-        executor.setMaxPoolSize(12);
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
 //        executor.setTaskDecorator();
         executor.setThreadNamePrefix("default-");
         return executor;

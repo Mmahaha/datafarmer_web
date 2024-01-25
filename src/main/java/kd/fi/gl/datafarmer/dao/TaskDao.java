@@ -28,7 +28,7 @@ public class TaskDao {
 
     public List<TaskConfig> findAll() {
         List<Map<String, Object>> rows = container.getFi()
-                .queryForList("select * from datafarmer_task");
+                .queryForList("select * from datafarmer_task order by fid asc");
         return mapRowsToEntities(rows);
     }
 

@@ -49,6 +49,7 @@ public class TaskExecutor {
     public void asyncExecute(List<TaskConfigDTO<? extends TaskExecutable>> taskConfigDTOS) {
         try {
             executeTasks(taskConfigDTOS, 1); // Start executing tasks with order 1
+            log.info("所有任务已执行完成~");
         } catch (Exception e) {
             // Handle exception
             log.error("execute failed", e);
@@ -61,7 +62,7 @@ public class TaskExecutor {
         if (order <= getMaxOrder(taskConfigDTOS)) {
             List<TaskConfigDTO<? extends TaskExecutable>> orderTaskConfigs = getTasksByOrder(taskConfigDTOS, order);
             Map<TaskConfigDTO<? extends TaskExecutable>, List<? extends TaskExecutable>> configSplitTasksMap =
-                    orderTaskConfigs.stream().collect(Collectors.toMap(
+                    orderTaskConfigs.parallelStream().collect(Collectors.toMap(
                             config -> config, config -> splitTasks(config).collect(Collectors.toList())));
             List<CompletableFuture<Void>> curOrderTaskFuture = new ArrayList<>(configSplitTasksMap.size());
             configSplitTasksMap.forEach((taskConfigDTO, taskExecutables) -> {

@@ -189,7 +189,7 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
             curMainCFItemId = mainCFItemIter.next();
             mainCFAssgrpIter = mainCFAssgrpIds.iterator();
         }
-        return new CashInfo(curMainCFItemId, 0L, mainCFAssgrpIter.next(), locAmt);
+        return new CashInfo(curMainCFItemId, 0L, mainCFAssgrpIter.hasNext() ? mainCFAssgrpIter.next() : 0L, locAmt);
     }
 
     private void saveAndClearRows(IrrigateResult result, List<String> headStrRows, List<String> entryStrRows,
