@@ -1,6 +1,7 @@
 package kd.fi.gl.datafarmer.core.task.enums;
 
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.DropIndexTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
 
@@ -11,6 +12,7 @@ import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
  * @date 2024/1/19
  */
 public enum TaskType {
+    DROP_INDEX(DropIndexTaskExecutable.class, 0),
     /**
      * 数据灌输任务
      */

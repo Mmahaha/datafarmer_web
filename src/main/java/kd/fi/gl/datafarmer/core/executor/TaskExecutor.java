@@ -48,7 +48,7 @@ public class TaskExecutor {
     @Async("defaultExecutor")
     public void asyncExecute(List<TaskConfigDTO<? extends TaskExecutable>> taskConfigDTOS) {
         try {
-            executeTasks(taskConfigDTOS, 1); // Start executing tasks with order 1
+            executeTasks(taskConfigDTOS, 0);
             log.info("所有任务已执行完成~");
         } catch (Exception e) {
             // Handle exception
