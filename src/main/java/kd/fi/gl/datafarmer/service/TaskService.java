@@ -79,6 +79,9 @@ public class TaskService {
     }
 
     public void executeAll() {
+        if (!taskDao.findByTaskStatus(TaskStatus.RUNNING).isEmpty()) {
+            throw new IllegalStateException("存在执行中的任务，不能再次执行。");
+        }
         List<TaskConfigDTO<? extends TaskExecutable>> allTasks = getAllReadyTasks();
         taskExecutor.asyncExecute(allTasks);
     }

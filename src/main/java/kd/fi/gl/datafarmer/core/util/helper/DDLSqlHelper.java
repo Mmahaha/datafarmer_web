@@ -41,6 +41,19 @@ public class DDLSqlHelper {
         }
     }
 
+    public int executeWithoutException(String ddlSql) {
+        long start = System.currentTimeMillis();
+        try {
+            int result = DB.getFiJdbcTemplate().update(ddlSql);
+            logger.info("[ddl]:ddlSql-{}执行成功,耗时{}s", ddlSql, (System.currentTimeMillis() - start) / 1000);
+            return result;
+        } catch (Exception e) {
+            // 可能是已存在之类的
+            logger.warn("[ddl]:ddlSql-{}执行失败:{}", ddlSql, e.getMessage());
+            return 0;
+        }
+    }
+
     public List<String> queryIndexes(String tableName) {
         return DB.getFiJdbcTemplate()
                 .queryForList("select indexname from pg_indexes where tablename = ?", String.class, tableName);

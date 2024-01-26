@@ -3,6 +3,7 @@ package kd.fi.gl.datafarmer.controller;
 import kd.fi.gl.datafarmer.common.ApiResponse;
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
 import kd.fi.gl.datafarmer.dto.TaskConfigDTO;
 import kd.fi.gl.datafarmer.service.TaskService;
 import lombok.RequiredArgsConstructor;
@@ -66,9 +67,16 @@ public class TaskController {
     }
 
 
-    // 创建任务
+    // 创建灌数任务
     @PostMapping("/irrigate")
     public ApiResponse<Boolean> createIrrigateTask(@RequestBody TaskConfigDTO<IrrigateTaskExecutable> taskConfigDTO) {
+        taskService.createTask(taskConfigDTO);
+        return ApiResponse.success(Boolean.TRUE);
+    }
+
+    // 创建索引任务
+    @PostMapping("/rebuildIndex")
+    public ApiResponse<Boolean> createRebuildIndexTask(@RequestBody TaskConfigDTO<RebuildIndexTaskExecutable> taskConfigDTO) {
         taskService.createTask(taskConfigDTO);
         return ApiResponse.success(Boolean.TRUE);
     }
