@@ -1,6 +1,7 @@
 package kd.fi.gl.datafarmer.core.task.enums;
 
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.AccCurrentTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.DropIndexTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
@@ -20,7 +21,11 @@ public enum TaskType {
     /**
      * 索引重建任务
      */
-    REBUILD_INDEX(RebuildIndexTaskExecutable.class, 2);
+    REBUILD_INDEX(RebuildIndexTaskExecutable.class, 2),
+    /**
+     * 往来账生成
+     */
+    ACC_CURRENT(AccCurrentTaskExecutable.class, 3);
 
     /**
      * 该任务类型对应的参数类，每一个任务类型都应当有一个自己的参数

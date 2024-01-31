@@ -34,6 +34,11 @@ public class CopyHelper implements AutoCloseable {
     private static final String COPY_COUNT_SQL = "copy t_gl_vouchercount (fid,forgid,fbooktypeid,fperiodid,fbillstatus,fsourcetype,fvouchercount,fentrycount,fischeck,fispost,fbookeddate)" +
             " from stdin with csv";
 
+    private static final String COPY_RECI_INIT_STATE_SQL = "copy t_gl_reci_init_state (fid,forgid,fbooktypeid,faccounttableid,faccountid,fendinitperiod,fisendinit,fmodifier,fmodifydate)" +
+            " from stdin with csv";
+
+    private static final String COPY_ACC_CURRENT = "copy t_gl_acccurrent (fid,forgid,fbooktypeid,fperiodid,facctableid,faccountid,fassgrpid,fcurrencyid,famountfor,famountbalfor,flocalcurrencyid,famount,famountbal,fbizdate,fexpiredate,fdescription,fstatus,fvchentryid,fsourcetype,fvoucherid,fmodifytime,fcreatetime,fmasterid,feffectivedate,funeffectivedate,fcreatorid,fwriteoffpersonid,fentrydc,fbookeddate)" +
+            " from stdin with csv";
 
 
     private final CopyManager copyManager;
@@ -170,6 +175,26 @@ public class CopyHelper implements AutoCloseable {
             return copyManager.copyIn(COPY_COUNT_SQL, new StringReader(String.join("\n", csvStr)));
         } catch (Exception e) {
             logger.error("copy vouchercount error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public long copyReciInitStat(List<String> csvStr) {
+        if (csvStr.isEmpty()) {return 0L;}
+        try {
+            return copyManager.copyIn(COPY_RECI_INIT_STATE_SQL, new StringReader(String.join("\n", csvStr)));
+        } catch (Exception e) {
+            logger.error("copy ReciInitStat error", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public long copyAccCurrent(List<String> csvStr) {
+        if (csvStr.isEmpty()) {return 0L;}
+        try {
+            return copyManager.copyIn(COPY_ACC_CURRENT, new StringReader(String.join("\n", csvStr)));
+        } catch (Exception e) {
+            logger.error("copy AccCurrent error", e);
             throw new RuntimeException(e);
         }
     }

@@ -21,15 +21,19 @@ public class RowsBuilder {
     private String voucherHeadValueSuffix;
 
 
-    public RowsBuilder(BookService.BookVO bookVO, PeriodVOBuilder.PeriodVO periodVO, long entryCurrencyId) {
+    public RowsBuilder(BookService.BookVO bookVO, long periodId, long entryCurrencyId) {
         this.orgIdStr = String.valueOf(bookVO.getOrgId());
         this.bookTypeIdStr = String.valueOf(bookVO.getBookTypeId());
         this.bookIdStr = String.valueOf(bookVO.getId());
         this.localCurrencyIdStr = String.valueOf(bookVO.getLocalCurrencyId());
         this.entryCurrencyIdStr = String.valueOf(entryCurrencyId);
-        this.periodIdStr = String.valueOf(periodVO.getId());
+        this.periodIdStr = String.valueOf(periodId);
         this.accountableIdStr = String.valueOf(bookVO.getAccountTableId());
         initVoucherHeadValueSuffix();
+    }
+
+    public RowsBuilder(BookService.BookVO bookVO) {
+        this(bookVO, 0L, 0L);
     }
 
 
@@ -149,6 +153,55 @@ public class RowsBuilder {
                 .add("a")//fischeck
                 .add("1")//fispost
                 .add(bookedDate);//fbookeddate
+        return stringJoiner.toString();
+    }
+
+    public String buildReciInitState(long fid, long accountId, long endInitPeriodId) {
+        StringJoiner stringJoiner = new StringJoiner(",");
+        stringJoiner.add(String.valueOf(fid))//fid
+                .add(orgIdStr)//forgid
+                .add(bookTypeIdStr)//fbooktypeid
+                .add(accountableIdStr)//faccounttableid
+                .add(String.valueOf(accountId))//faccountid
+                .add(String.valueOf(endInitPeriodId))//fendinitperiod
+                .add("1")//fisendinit
+                .add("1")//fmodifier
+                .add("2018-08-08");//fmodifydate
+        return stringJoiner.toString();
+    }
+
+    public String buildAccCurrent(long fid, long accountId, long assgrpId, long amountFor, long amountLoc,
+                                  String bizDate, long entryId, long voucherId, String entryDC) {
+        StringJoiner stringJoiner = new StringJoiner(",");
+        stringJoiner.add(String.valueOf(fid))// fid
+                .add(orgIdStr)// forgid
+                .add(bookTypeIdStr)// fbooktypeid
+                .add(periodIdStr)// fperiodid
+                .add(accountableIdStr)// facctableid
+                .add(String.valueOf(accountId))// faccountid
+                .add(String.valueOf(assgrpId))// fassgrpid
+                .add(entryCurrencyIdStr)// fcurrencyid
+                .add(String.valueOf(amountFor))// famountfor
+                .add(String.valueOf(amountFor))// famountbalfor
+                .add(localCurrencyIdStr)// flocalcurrencyid
+                .add(String.valueOf(amountLoc))// famount
+                .add(String.valueOf(amountLoc))// famountbal
+                .add(bizDate)// fbizdate
+                .add(bizDate)// fexpiredate
+                .add("' '")// fdescription
+                .add("0")// fstatus
+                .add(String.valueOf(entryId))// fvchentryid
+                .add("0")// fsourcetype
+                .add(String.valueOf(voucherId))// fvoucherid
+                .add("2018-08-08")// fmodifytime
+                .add("2018-08-08")// fcreatetime
+                .add(String.valueOf(fid))// fmasterid
+                .add("1900-01-01")// feffectivedate
+                .add("2999-12-31")// funeffectivedate
+                .add("1")// fcreatorid
+                .add("1")// fwriteoffpersonid
+                .add(entryDC)// fentrydc
+                .add(bizDate);// fbookeddate
         return stringJoiner.toString();
     }
 

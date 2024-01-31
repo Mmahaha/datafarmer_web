@@ -2,6 +2,7 @@ package kd.fi.gl.datafarmer.controller;
 
 import kd.fi.gl.datafarmer.common.ApiResponse;
 import kd.fi.gl.datafarmer.core.task.TaskExecutable;
+import kd.fi.gl.datafarmer.core.task.impl.AccCurrentTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.DropIndexTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.IrrigateTaskExecutable;
 import kd.fi.gl.datafarmer.core.task.impl.RebuildIndexTaskExecutable;
@@ -85,6 +86,13 @@ public class TaskController {
     // 创建删除索引任务
     @PostMapping("/dropIndex")
     public ApiResponse<Boolean> createDropIndexTask(@RequestBody TaskConfigDTO<DropIndexTaskExecutable> taskConfigDTO) {
+        taskService.createTask(taskConfigDTO);
+        return ApiResponse.success(Boolean.TRUE);
+    }
+
+    // 创建往来账任务
+    @PostMapping("/accCurrent")
+    public ApiResponse<Boolean> createAccCurrentTask(@RequestBody TaskConfigDTO<AccCurrentTaskExecutable> taskConfigDTO) {
         taskService.createTask(taskConfigDTO);
         return ApiResponse.success(Boolean.TRUE);
     }

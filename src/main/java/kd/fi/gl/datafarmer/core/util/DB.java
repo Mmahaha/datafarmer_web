@@ -3,6 +3,7 @@ package kd.fi.gl.datafarmer.core.util;
 import kd.fi.gl.datafarmer.common.db.JdbcTemplateContainer;
 import kd.fi.gl.datafarmer.core.util.helper.CopyHelper;
 import kd.fi.gl.datafarmer.core.util.helper.DDLSqlHelper;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,7 +17,8 @@ public class DB {
 
     private static JdbcTemplateContainer container;
 
-    public static CopyHelper getCopyHelper() throws SQLException {
+    @SneakyThrows
+    public static CopyHelper getCopyHelper(){
         return new CopyHelper(container.getFiConnection());
     }
 

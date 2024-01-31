@@ -113,7 +113,7 @@ public class IrrigateTaskExecutable implements TaskExecutable {
                         .xorSuffix(bookVO.getOrgId() ^ periodVO.getId() ^ entryCurrencyId)
                         // fid : distinctSeq(2) + bookIndex(5) + periodNumber(intercept last 4) + voucherHeadCount(5) (+entrySeq(3))
 //                        .beginVoucherId(distinctSign * 100_0000_0000_0000L + bookVO.getIndex() * 10_0000_0000L + periodNumber * 10_0000)
-                        .rowsBuilder(new RowsBuilder(bookVO, periodVO, entryCurrencyId))
+                        .rowsBuilder(new RowsBuilder(bookVO, periodVO.getId(), entryCurrencyId))
                         .bookedDateRangeList(DateUtils.generateDateRange(periodVO.getBeginDate(), periodVO.getEndDate()))
                         .build();
                 checkSubTask(subIrrigateTaskExecutable);
