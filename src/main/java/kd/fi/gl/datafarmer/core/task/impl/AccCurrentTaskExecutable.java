@@ -162,13 +162,10 @@ public class AccCurrentTaskExecutable implements TaskExecutable {
             return false;
         }
 
-        @Setter(AccessLevel.NONE)
-        private CopyHelper copyHelper;
 
         @Override
         public void execute() {
-            this.copyHelper = DB.getCopyHelper();
-            RowsWriter rowsWriter = new RowsWriter(DB.getCopyHelper(), CopyHelper::copyAccCurrent);
+            @Cleanup RowsWriter rowsWriter = new RowsWriter(DB.getCopyHelper(), CopyHelper::copyAccCurrent);
             BookService.BookVO bookVO = BookService.get(orgId);
             RowsBuilder rowsBuilder = new RowsBuilder(bookVO, periodId, 1L);
             List<Object[]> updateParams = new ArrayList<>(1000);
