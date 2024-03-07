@@ -119,11 +119,11 @@ public class SubIrrigateTaskExecutable extends IrrigateTaskExecutable {
                     // 构造分录，先借后贷
                     entryStrRows.add(rowsBuilder.buildVoucherEntry(entryId = nextEntryId(voucherId, ++entrySeq),
                             voucherId, entrySeq, accountId, assgrpId, (entrySeq & 1) == 1, amtInfo, cashInfo));
-                    if (containsCashFlow && cashInfo != CashInfo.ZERO) {
+                    if (containsCashFlow && cashInfo != CashInfo.ZERO && !tempStatus) {
                         cashBalanceStrRows.add(rowsBuilder.buildCashFlow(entryId, cashInfo.getMainCfItemId(), cashInfo.getMainCFAssgrpId(), cashInfo.getCfAmount(), 1));
                     }
                     // 只在最后一次重复度循环里处理余额构造
-                    if (loopTimes == 0) {
+                    if (loopTimes == 0 && !tempStatus) {
 //                        Object[] params = new Object[] {amtInfo, entrySeq, entryId};  // for lambda
 //                        acctSumAmtInfoMap.compute(accountId, (accId, acctSumAmtInfo) -> {
 //                            if (acctSumAmtInfo == null) {acctSumAmtInfo = new AcctSumAmtInfo(accId, (Long) params[2], (boolean) params[3]);}

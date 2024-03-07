@@ -15,13 +15,14 @@ public class RowsBuilder {
     private final String accountableIdStr;
     private final String localCurrencyIdStr;
     private final String entryCurrencyIdStr;
+    private final boolean tempStatus;
     /**
      * 凭证数据行后缀，因为一行头数据除了id和凭证号其他都是一样的，所以其他的值只需在初始化时构造一次
      */
     private String voucherHeadValueSuffix;
 
 
-    public RowsBuilder(BookService.BookVO bookVO, long periodId, long entryCurrencyId) {
+    public RowsBuilder(BookService.BookVO bookVO, long periodId, long entryCurrencyId, boolean tempStatus) {
         this.orgIdStr = String.valueOf(bookVO.getOrgId());
         this.bookTypeIdStr = String.valueOf(bookVO.getBookTypeId());
         this.bookIdStr = String.valueOf(bookVO.getId());
@@ -30,10 +31,15 @@ public class RowsBuilder {
         this.periodIdStr = String.valueOf(periodId);
         this.accountableIdStr = String.valueOf(bookVO.getAccountTableId());
         initVoucherHeadValueSuffix();
+        this.tempStatus = tempStatus;
+    }
+
+    public RowsBuilder(BookService.BookVO bookVO, long periodId, long entryCurrencyId) {
+        this(bookVO, periodId, entryCurrencyId, false);
     }
 
     public RowsBuilder(BookService.BookVO bookVO) {
-        this(bookVO, 0L, 0L);
+        this(bookVO, 0L, 0L, false);
     }
 
 
@@ -146,7 +152,7 @@ public class RowsBuilder {
                 .add(orgIdStr)//forgid
                 .add(bookTypeIdStr)//fbooktypeid
                 .add(periodIdStr)//fperiodid
-                .add("C")//fbillstatus
+                .add(tempStatus ? "A":"C")//fbillstatus
                 .add("0")//fsourcetype
                 .add(String.valueOf(voucherCount.getHeadCount()))//fvouchercount
                 .add(String.valueOf(voucherCount.getEntryCount()))//fentrycount
@@ -257,11 +263,11 @@ public class RowsBuilder {
                 .add(orgIdStr)//forgid
                 .add(String.valueOf(periodIdStr))//fperiodid
                 .add("1323036438454863872")//ftypeid
-                .add("C")//fbillstatus
+                .add(tempStatus ? "A" : "C")//fbillstatus
                 .add("1")//fcreatorid
                 .add("1")//fsubmitterid
                 .add("1")//fauditorid
-                .add("1")//fispost
+                .add(tempStatus ? "0" : "1")//fispost
                 .add("1")//fposterid
                 .add("1")//fmodifierid
                 .add(localCurrencyIdStr);//floccurrency

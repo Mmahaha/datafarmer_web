@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,7 +137,7 @@ public class AccCurrentTaskExecutable implements TaskExecutable {
             List<BookService.BookVO> bookVOS = BookService.getBookVOsByOrg(orgIds);
             for (BookService.BookVO bookVO : bookVOS) {
                 RowsBuilder rowsBuilder = new RowsBuilder(bookVO);
-                for (Long accountId : accountIds) {
+                for (Long accountId : new HashSet<>(accountIds)) {
                     rowsWriter.write(rowsBuilder.buildReciInitState(ID.genLongId(), accountId, endInitPeriodId));
                 }
             }

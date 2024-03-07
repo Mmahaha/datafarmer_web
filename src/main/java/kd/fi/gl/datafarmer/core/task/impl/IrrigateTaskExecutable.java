@@ -52,6 +52,8 @@ public class IrrigateTaskExecutable implements TaskExecutable {
     private String suppCFItemSelectSql;
     private String mainCFAssgrpSelectSql;
     private int distinctSign;
+    // 凭证只到暂存状态
+    protected boolean tempStatus = false;
 
     @Override
     public boolean supportSplit() {
@@ -113,8 +115,9 @@ public class IrrigateTaskExecutable implements TaskExecutable {
                         .xorSuffix(bookVO.getOrgId() ^ periodVO.getId() ^ entryCurrencyId)
                         // fid : distinctSeq(2) + bookIndex(5) + periodNumber(intercept last 4) + voucherHeadCount(5) (+entrySeq(3))
 //                        .beginVoucherId(distinctSign * 100_0000_0000_0000L + bookVO.getIndex() * 10_0000_0000L + periodNumber * 10_0000)
-                        .rowsBuilder(new RowsBuilder(bookVO, periodVO.getId(), entryCurrencyId))
+                        .rowsBuilder(new RowsBuilder(bookVO, periodVO.getId(), entryCurrencyId, tempStatus))
                         .bookedDateRangeList(DateUtils.generateDateRange(periodVO.getBeginDate(), periodVO.getEndDate()))
+                        .tempStatus(tempStatus)
                         .build();
                 checkSubTask(subIrrigateTaskExecutable);
                 result.add(subIrrigateTaskExecutable);
