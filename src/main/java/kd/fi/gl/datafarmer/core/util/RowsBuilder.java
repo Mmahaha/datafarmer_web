@@ -86,7 +86,8 @@ public class RowsBuilder {
                 .add(String.valueOf(cashInfo.getCfAmount()))//fmaincfamount
                 .add(String.valueOf(cashInfo.getCfAmount()))//fsuppcfamount
                 .add(String.valueOf(cashInfo.getMainCfItemId()))//fmaincfitemid
-                .add(String.valueOf(cashInfo.getSuppCfItemId()));//fsuppcfitemid
+                .add(String.valueOf(cashInfo.getSuppCfItemId()))//fsuppcfitemid
+                .add(String.valueOf(cashInfo.getMainCFAssgrpId()));// fmaincfassgrpid;
         return stringJoiner.toString();
     }
 

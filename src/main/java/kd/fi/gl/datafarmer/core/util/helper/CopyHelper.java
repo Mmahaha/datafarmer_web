@@ -15,7 +15,7 @@ public class CopyHelper implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(CopyHelper.class);
     private static final String COPY_HEAD_SQL = "copy t_gl_voucher$%d (fid,fnumber,fbizdate,fbookeddate,fcreatetime,fauditdate,fposttime,fmodifytime,fcashierid,fmainstatus,fsuppstatus,fischeck,fbooktypeid,fbookid,forgid,fperiodid,ftypeid,fbillstatus,fcreatorid,fsubmitterid,fauditorid,fispost,fposterid,fmodifierid,floccurrency)" +
             " from stdin with csv";
-    private static final String COPY_ENTRY_SQL = "copy t_gl_voucherentry$%d (fentryid, fid, faccountid, fcurrencyid, flocalexchangerate, fassgrpid, foriginaldebit, foriginalcredit, flocaldebit, flocalcredit, fseq, fentrydc, forgid, fperiodid, fmaincfamount,fsuppcfamount,fmaincfitemid,fsuppcfitemid)" +
+    private static final String COPY_ENTRY_SQL = "copy t_gl_voucherentry$%d (fentryid, fid, faccountid, fcurrencyid, flocalexchangerate, fassgrpid, foriginaldebit, foriginalcredit, flocaldebit, flocalcredit, fseq, fentrydc, forgid, fperiodid, fmaincfamount,fsuppcfamount,fmaincfitemid,fsuppcfitemid,fmaincfassgrpid)" +
             " from stdin with csv";
     private static final String COPY_$PK_SQL = "copy t_gl_voucher$pk (fpk, findex, fnumber)" +
             " from stdin with csv";
