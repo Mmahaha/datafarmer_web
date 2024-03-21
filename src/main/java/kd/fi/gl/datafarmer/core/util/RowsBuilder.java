@@ -30,8 +30,8 @@ public class RowsBuilder {
         this.entryCurrencyIdStr = String.valueOf(entryCurrencyId);
         this.periodIdStr = String.valueOf(periodId);
         this.accountableIdStr = String.valueOf(bookVO.getAccountTableId());
-        initVoucherHeadValueSuffix();
         this.tempStatus = tempStatus;
+        initVoucherHeadValueSuffix();
     }
 
     public RowsBuilder(BookService.BookVO bookVO, long periodId, long entryCurrencyId) {
