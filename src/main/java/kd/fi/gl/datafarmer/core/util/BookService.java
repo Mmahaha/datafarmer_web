@@ -19,7 +19,7 @@ public class BookService {
         BOOK_VO_MAP = new HashMap<>(50000);
         AtomicInteger index = new AtomicInteger(1);
         DB.getFiJdbcTemplate().query("select fid,forgid,faccounttableid,fperiodtypeid,fbasecurrencyid," +
-                        "fbookstypeid from t_bd_accountbooks where fstartperiodid > 0 order by fcreatetime asc",
+                        "fbookstypeid from t_bd_accountbooks where fstartperiodid > 0 order by fcreatetime desc",
                 (RowCallbackHandler) rs -> BOOK_VO_MAP.put(rs.getLong("forgid"),
                         new BookVO(rs.getLong("forgid"),
                                 rs.getLong("faccounttableid"),
